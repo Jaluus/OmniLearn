@@ -2,13 +2,14 @@ import time
 
 import numpy as np
 import tensorflow as tf
-import utils
+import _bootstrap  # noqa: F401
+import omnilearn.utils as utils
 from keras import Input, layers
 from keras.losses import mse
 from keras.models import Model
-from layers import LayerScale, StochasticDepth
+from omnilearn.nn.layers import LayerScale, StochasticDepth
 from omnifold import weighted_binary_crossentropy
-from PET import PET, FourierProjection, get_encoding
+from omnilearn.models.pet import FourierProjection, PET, get_encoding
 from tensorflow import keras
 
 

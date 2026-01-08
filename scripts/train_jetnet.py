@@ -3,11 +3,12 @@ import logging
 import os
 import pickle
 
+import _bootstrap  # noqa: F401
 import horovod.tensorflow.keras as hvd
 import numpy as np
 
 # Custom local imports
-import utils
+import omnilearn.utils as utils
 from keras.callbacks import EarlyStopping, ModelCheckpoint, ReduceLROnPlateau
 
 # Keras imports

@@ -1,8 +1,9 @@
 import os
 
+import _bootstrap  # noqa: F401
 import numpy as np
 import plot_utils
-import utils
+import omnilearn.utils as utils
 
 plot_utils.SetStyle()
 

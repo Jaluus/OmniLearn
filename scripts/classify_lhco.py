@@ -2,10 +2,11 @@ import argparse
 import os
 import pickle
 
+import _bootstrap  # noqa: F401
 import horovod.tensorflow.keras as hvd
 import numpy as np
 import tensorflow as tf
-import utils
+import omnilearn.utils as utils
 from keras.callbacks import ModelCheckpoint, ReduceLROnPlateau
 from keras.optimizers import Lion, schedules
 from PET_lhco import Classifier

@@ -3,12 +3,13 @@ import logging
 import os
 import pickle
 
+import _bootstrap  # noqa: F401
 import horovod.tensorflow.keras as hvd
 import numpy as np
 
 # Custom local imports
-import utils
-from PET import PET
+import omnilearn.utils as utils
+from omnilearn.models.pet import PET
 from tensorflow import keras
 
 # Setup logging

@@ -2,12 +2,13 @@ import argparse
 import logging
 import os
 
+import _bootstrap  # noqa: F401
 import h5py as h5
 import horovod.tensorflow.keras as hvd
 import numpy as np
 import plot_utils
 import tensorflow as tf
-import utils
+import omnilearn.utils as utils
 from PET_jetnet import PET_jetnet
 
 # Setup logging

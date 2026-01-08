@@ -1,10 +1,11 @@
 import os
 from optparse import OptionParser
 
+import _bootstrap  # noqa: F401
 import horovod.tensorflow.keras as hvd
 import numpy as np
 import tensorflow as tf
-import utils
+import omnilearn.utils as utils
 from PET_lhco import Classifier
 from sklearn import metrics
 from tqdm import tqdm

@@ -1,12 +1,13 @@
 import argparse
 import os
 
+import _bootstrap  # noqa: F401
 import horovod.tensorflow.keras as hvd
 import numpy as np
 import tensorflow as tf
-import utils
+import omnilearn.utils as utils
 from omnifold import Classifier
-from PET import PET
+from omnilearn.models.pet import PET
 from sklearn import metrics
 
 

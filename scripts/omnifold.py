@@ -1,11 +1,12 @@
 import pickle
 
+import _bootstrap  # noqa: F401
 import horovod.tensorflow.keras as hvd
 import numpy as np
 import tensorflow as tf
 from keras.callbacks import EarlyStopping, ModelCheckpoint, ReduceLROnPlateau
 from keras.losses import mse
-from PET import PET
+from omnilearn.models.pet import PET
 from scipy.special import expit
 from tensorflow import keras
 

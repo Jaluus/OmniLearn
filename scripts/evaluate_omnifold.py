@@ -2,11 +2,12 @@ import argparse
 import logging
 import os
 
+import _bootstrap  # noqa: F401
 import horovod.tensorflow.keras as hvd
 import numpy as np
 import plot_utils
 import tensorflow as tf
-import utils
+import omnilearn.utils as utils
 from omnifold import Classifier, OmniFold
 
 

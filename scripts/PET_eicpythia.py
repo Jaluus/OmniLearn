@@ -1,10 +1,11 @@
 import numpy as np
 import tensorflow as tf
-import utils
+import _bootstrap  # noqa: F401
+import omnilearn.utils as utils
 from keras import Input, layers
 from keras.models import Model
-from layers import LayerScale
-from PET import PET, FourierProjection
+from omnilearn.nn.layers import LayerScale
+from omnilearn.models.pet import FourierProjection, PET
 from tensorflow import keras
 from tqdm import tqdm
 

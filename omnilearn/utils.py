@@ -1008,14 +1008,22 @@ class JetClassDataLoader(DataLoader):
         self.get_stats(all_files)
 
     def get_stats(self, file_list):
+
         # Will assume each file is 100k long
         self.nevts = len(file_list) * 100000 // 5
-        self.num_part = h5.File(file_list[0], "r")["data"].shape[1]
-        self.num_feat = h5.File(file_list[0], "r")["data"].shape[2]
-        self.num_jet = 4  # hardcoded for convenience
-        self.num_classes = h5.File(file_list[0], "r")["pid"].shape[1]
+
         self.steps_per_epoch = self.nevts // self.size // self.batch_size
+
         self.num_pad = 0
+        self.num_jet = 4  # hardcoded for convenience
+
+        current_file = h5.File(file_list[0], "r")
+        self.num_part = current_file["data"].shape[1]
+        self.num_feat = current_file["data"].shape[2]
+
+        # TODO: Fix this, I the pid key previously faild, as the shape was 1D
+        # Why did the previous code work then?
+        self.num_classes = 10  # current_file["pid"].shape[1]
 
     def single_file_generator(self, file_path):
         with h5.File(file_path, "r") as file:

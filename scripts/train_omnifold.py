@@ -3,7 +3,9 @@ import os
 
 import _bootstrap  # noqa: F401
 import horovod.tensorflow.keras as hvd
-import omnilearn.utils as utils
+from omnilearn.data import OmniDataLoader
+from omnilearn.distributed import setup_gpus
+from omnilearn.naming import get_model_name
 from omnifold import Classifier, OmniFold
 from tensorflow import keras
 
@@ -86,16 +88,16 @@ def parse_arguments():
 
 
 def main():
-    utils.setup_gpus()
+    setup_gpus()
     flags = parse_arguments()
 
-    mc = utils.OmniDataLoader(
+    mc = OmniDataLoader(
         os.path.join(flags.folder, "OmniFold", "train_pythia.h5"),
         flags.batch,
         hvd.rank(),
         hvd.size(),
     )
-    data = utils.OmniDataLoader(
+    data = OmniDataLoader(
         os.path.join(flags.folder, "OmniFold", "train_herwig.h5"),
         flags.batch,
         hvd.rank(),
@@ -105,7 +107,7 @@ def main():
     model_name = None
     if flags.fine_tune:
         model_name = (
-            utils.get_model_name(flags, flags.fine_tune)
+            get_model_name(flags, flags.fine_tune)
             .replace(flags.dataset, "jetclass")
             .replace("fine_tune", "baseline")
             .replace(flags.mode, "all")

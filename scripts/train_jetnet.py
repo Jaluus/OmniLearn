@@ -8,7 +8,9 @@ import horovod.tensorflow.keras as hvd
 import numpy as np
 
 # Custom local imports
-import omnilearn.utils as utils
+from omnilearn.data import JetNetDataLoader
+from omnilearn.distributed import setup_gpus
+from omnilearn.naming import get_model_name
 from keras.callbacks import EarlyStopping, ModelCheckpoint, ReduceLROnPlateau
 
 # Keras imports
@@ -77,14 +79,14 @@ def parse_arguments():
 
 def get_data_loader(flags):
     if flags.dataset == "jetnet150":
-        train = utils.JetNetDataLoader(
+        train = JetNetDataLoader(
             os.path.join(flags.folder, "JetNet", "train_150.h5"),
             flags.batch,
             hvd.rank(),
             hvd.size(),
             big=True,
         )
-        val = utils.JetNetDataLoader(
+        val = JetNetDataLoader(
             os.path.join(flags.folder, "JetNet", "test_150.h5"),
             flags.batch,
             hvd.rank(),
@@ -92,13 +94,13 @@ def get_data_loader(flags):
             big=True,
         )
     elif flags.dataset == "jetnet30":
-        train = utils.JetNetDataLoader(
+        train = JetNetDataLoader(
             os.path.join(flags.folder, "JetNet", "train_30.h5"),
             flags.batch,
             hvd.rank(),
             hvd.size(),
         )
-        val = utils.JetNetDataLoader(
+        val = JetNetDataLoader(
             os.path.join(flags.folder, "JetNet", "test_30.h5"),
             flags.batch,
             hvd.rank(),
@@ -120,14 +122,14 @@ def configure_optimizers(flags, train_loader, lr_factor=1.0):
 
 
 def main():
-    utils.setup_gpus()
+    setup_gpus()
     flags = parse_arguments()
 
     train_loader, val_loader = get_data_loader(flags)
 
     if flags.fine_tune:
         model_name = (
-            utils.get_model_name(flags, flags.fine_tune)
+            get_model_name(flags, flags.fine_tune)
             .replace(flags.dataset, "jetclass")
             .replace("fine_tune", "baseline")
             .replace(flags.mode, "all")
@@ -166,7 +168,7 @@ def main():
     ]
 
     if hvd.rank() == 0:
-        checkpoint_name = utils.get_model_name(flags, flags.fine_tune)
+        checkpoint_name = get_model_name(flags, flags.fine_tune)
         checkpoint_path = os.path.join(flags.folder, "checkpoints", checkpoint_name)
         checkpoint_callback = ModelCheckpoint(
             checkpoint_path,
@@ -193,7 +195,7 @@ def main():
             os.path.join(
                 flags.folder,
                 "histories",
-                utils.get_model_name(flags, flags.fine_tune).replace(
+                get_model_name(flags, flags.fine_tune).replace(
                     ".weights.h5", ".pkl"
                 ),
             ),

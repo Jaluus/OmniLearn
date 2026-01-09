@@ -5,5 +5,3 @@ This package is intentionally lightweight and does not require installation
 to `sys.path` via `_bootstrap.py` so imports work from any working directory.
 """
 
-from . import utils  # re-export for convenience
-

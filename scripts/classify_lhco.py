@@ -6,18 +6,12 @@ import _bootstrap  # noqa: F401
 import horovod.tensorflow.keras as hvd
 import numpy as np
 import tensorflow as tf
-import omnilearn.utils as utils
+from omnilearn.data import LHCODataLoader
+from omnilearn.distributed import setup_gpus
+from omnilearn.naming import get_model_name
 from keras.callbacks import ModelCheckpoint, ReduceLROnPlateau
 from keras.optimizers import Lion, schedules
 from PET_lhco import Classifier
-
-
-def setup_gpus():
-    gpus = tf.config.experimental.list_physical_devices("GPU")
-    for gpu in gpus:
-        tf.config.experimental.set_memory_growth(gpu, True)
-    if gpus:
-        tf.config.experimental.set_visible_devices(gpus[hvd.local_rank()], "GPU")
 
 
 def configure_optimizers(flags, train_loader, lr_factor=1.0):
@@ -115,7 +109,7 @@ def get_data_loader(flags, region):
         assert (
             region == "SR"
         ), "ERROR: Only SR background samples are available for idealized training"
-        train = utils.LHCODataLoader(
+        train = LHCODataLoader(
             os.path.join(
                 flags.folder, "LHCO", f"train_background_{region}_extended.h5"
             ),
@@ -124,7 +118,7 @@ def get_data_loader(flags, region):
             hvd.size(),
             nevts=320000,
         )
-        test = utils.LHCODataLoader(
+        test = LHCODataLoader(
             os.path.join(flags.folder, "LHCO", f"val_background_{region}_extended.h5"),
             flags.batch,
             hvd.rank(),
@@ -133,18 +127,18 @@ def get_data_loader(flags, region):
         )
     else:
         sample_name = (
-            utils.get_model_name(flags, flags.fine_tune)
+            get_model_name(flags, flags.fine_tune)
             .replace(".weights.h5", f"_{region}.h5")
             .replace("classifier", "generator")
         )
-        train = utils.LHCODataLoader(
+        train = LHCODataLoader(
             os.path.join(flags.folder, "LHCO", f"train_{sample_name}"),
             flags.batch,
             hvd.rank(),
             hvd.size(),
             nevts=320000,
         )
-        test = utils.LHCODataLoader(
+        test = LHCODataLoader(
             os.path.join(flags.folder, "LHCO", f"test_{sample_name}"),
             flags.batch,
             hvd.rank(),
@@ -152,14 +146,14 @@ def get_data_loader(flags, region):
             nevts=35555,
         )
 
-    data_train = utils.LHCODataLoader(
+    data_train = LHCODataLoader(
         os.path.join(flags.folder, "LHCO", "train_background_{}.h5".format(region)),
         flags.batch,
         hvd.rank(),
         hvd.size(),
         nevts=90000,
     )
-    data_test = utils.LHCODataLoader(
+    data_test = LHCODataLoader(
         os.path.join(flags.folder, "LHCO", "val_background_{}.h5".format(region)),
         flags.batch,
         hvd.rank(),
@@ -174,7 +168,7 @@ def get_data_loader(flags, region):
     test.w *= data_test.nevts / test.nevts
 
     if flags.SR:
-        signal_train = utils.LHCODataLoader(
+        signal_train = LHCODataLoader(
             os.path.join(flags.folder, "LHCO", "train_signal_{}.h5".format(region)),
             flags.batch,
             hvd.rank(),
@@ -182,7 +176,7 @@ def get_data_loader(flags, region):
             nevts=int(flags.nsig * 0.9),
         )
         train.combine([data_train, signal_train], use_weights=True)
-        signal_test = utils.LHCODataLoader(
+        signal_test = LHCODataLoader(
             os.path.join(flags.folder, "LHCO", "val_signal_{}.h5".format(region)),
             flags.batch,
             hvd.rank(),
@@ -209,7 +203,7 @@ def main():
 
     if flags.fine_tune:
         model_name = (
-            utils.get_model_name(flags, flags.fine_tune)
+            get_model_name(flags, flags.fine_tune)
             .replace(flags.dataset, "jetclass")
             .replace("fine_tune", "baseline")
             .replace(flags.mode, "all")
@@ -255,7 +249,7 @@ def main():
             os.path.join(
                 flags.folder,
                 "checkpoints",
-                utils.get_model_name(flags, flags.fine_tune, add_string=add_string),
+                get_model_name(flags, flags.fine_tune, add_string=add_string),
             ),
             save_weights_only=True,
             period=1,
@@ -278,7 +272,7 @@ def main():
             os.path.join(
                 flags.folder,
                 "histories",
-                utils.get_model_name(flags, flags.fine_tune).replace(
+                get_model_name(flags, flags.fine_tune).replace(
                     ".weights.h5", ".pkl"
                 ),
             ),

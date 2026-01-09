@@ -5,7 +5,9 @@ import _bootstrap  # noqa: F401
 import horovod.tensorflow.keras as hvd
 import numpy as np
 import tensorflow as tf
-import omnilearn.utils as utils
+from omnilearn.data import LHCODataLoader
+from omnilearn.distributed import setup_gpus
+from omnilearn.naming import get_model_name
 from PET_lhco import Classifier
 from sklearn import metrics
 from tqdm import tqdm
@@ -85,13 +87,13 @@ def parse_options():
 
 
 def load_data(flags):
-    test = utils.LHCODataLoader(
+    test = LHCODataLoader(
         os.path.join(flags.folder, "LHCO", "val_background_SR_extended.h5"),
         flags.batch,
         hvd.rank(),
         hvd.size(),
     )
-    sig_test = utils.LHCODataLoader(
+    sig_test = LHCODataLoader(
         os.path.join(flags.folder, "LHCO", "train_signal_SR.h5"),
         flags.batch,
         hvd.rank(),
@@ -143,7 +145,7 @@ def evaluate_existing_results(flags, folder_name, threshold):
                 flags.folder,
                 folder_name,
                 "npy",
-                f"{utils.get_model_name(flags, fine_tune=flags.fine_tune, add_string=add_string)}".replace(
+                f"{get_model_name(flags, fine_tune=flags.fine_tune, add_string=add_string)}".replace(
                     ".h5", ".npy"
                 ),
             )
@@ -161,7 +163,7 @@ def generate_and_save_results(flags, test, folder_name):
         + ("_ideal" if flags.ideal else "")
         + (f"_{flags.nid}" if flags.nid > 0 else "")
     )
-    model_name = utils.get_model_name(
+    model_name = get_model_name(
         flags, fine_tune=flags.fine_tune, add_string=add_string
     )
 
@@ -219,7 +221,7 @@ def display_statistics(sic, aucs):
 
 
 def main():
-    utils.setup_gpus()
+    setup_gpus()
     flags, args = parse_options()
     test = load_data(flags)
     evaluate_model(flags, test)

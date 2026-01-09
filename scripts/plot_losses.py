@@ -3,7 +3,8 @@ import argparse
 import _bootstrap  # noqa: F401
 import numpy as np
 import plot_utils
-import omnilearn.utils as utils
+from omnilearn.naming import get_model_name
+from omnilearn.serialization import load_pickle
 
 plot_utils.SetStyle()
 
@@ -73,14 +74,14 @@ def compute_means(input_array, M):
 
 def load_and_plot_history(flags):
 
-    baseline_file = utils.get_model_name(flags, fine_tune=False)
-    ft_file = utils.get_model_name(flags, fine_tune=True)
+    baseline_file = get_model_name(flags, fine_tune=False)
+    ft_file = get_model_name(flags, fine_tune=True)
     if flags.dataset == "omnifold":
         baseline_file = f"{flags.folder}/histories/OmniFold_baseline_iter0_step1.pkl"
         ft_file = f"{flags.folder}/histories/OmniFold_fine_tune_iter0_step1.pkl"
 
-    history_baseline = utils.load_pickle(flags.folder, baseline_file)
-    history_ft = utils.load_pickle(flags.folder, ft_file)
+    history_baseline = load_pickle(flags.folder, baseline_file)
+    history_ft = load_pickle(flags.folder, ft_file)
 
     if flags.mode == "generator":
         loss_key = "val_part"

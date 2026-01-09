@@ -7,8 +7,17 @@ import _bootstrap  # noqa: F401
 import horovod.tensorflow.keras as hvd
 import numpy as np
 
-# Custom local imports
-import omnilearn.utils as utils
+from omnilearn.data import (
+    CMSQGDataLoader,
+    H1DataLoader,
+    JetClassDataLoader,
+    QGDataLoader,
+    TauDataLoader,
+    TopDataLoader,
+    ToyDataLoader,
+)
+from omnilearn.distributed import setup_gpus
+from omnilearn.naming import get_model_name
 from omnilearn.models.pet import PET
 from tensorflow import keras
 
@@ -86,98 +95,98 @@ def parse_arguments():
 def get_data_loader(flags):
 
     if flags.dataset == "top":
-        train = utils.TopDataLoader(
+        train = TopDataLoader(
             os.path.join(flags.folder, "TOP", "train_ttbar.h5"),
             flags.batch,
             hvd.rank(),
             hvd.size(),
         )
-        val = utils.TopDataLoader(
+        val = TopDataLoader(
             os.path.join(flags.folder, "TOP", "val_ttbar.h5"),
             flags.batch,
             hvd.rank(),
             hvd.size(),
         )
     if flags.dataset == "opt":
-        train = utils.TopDataLoader(
+        train = TopDataLoader(
             os.path.join(flags.folder, "Opt", "train_ttbar.h5"),
             flags.batch,
             hvd.rank(),
             hvd.size(),
         )
-        val = utils.TopDataLoader(
+        val = TopDataLoader(
             os.path.join(flags.folder, "Opt", "test_ttbar.h5"),
             flags.batch,
             hvd.rank(),
             hvd.size(),
         )
     if flags.dataset == "toy":
-        train = utils.ToyDataLoader(
+        train = ToyDataLoader(
             100000 // hvd.size(), flags.batch, hvd.rank(), hvd.size()
         )
-        val = utils.ToyDataLoader(
+        val = ToyDataLoader(
             100000 // hvd.size(), flags.batch, hvd.rank(), hvd.size()
         )
     elif flags.dataset == "tau":
-        train = utils.TauDataLoader(
+        train = TauDataLoader(
             os.path.join(flags.folder, "TAU", "train_tau.h5"),
             flags.batch,
             hvd.rank(),
             hvd.size(),
         )
-        val = utils.TauDataLoader(
+        val = TauDataLoader(
             os.path.join(flags.folder, "TAU", "val_tau.h5"),
             flags.batch,
             hvd.rank(),
             hvd.size(),
         )
     elif flags.dataset == "qg":
-        train = utils.QGDataLoader(
+        train = QGDataLoader(
             os.path.join(flags.folder, "QG", "train_qg.h5"),
             flags.batch,
             hvd.rank(),
             hvd.size(),
         )
-        val = utils.QGDataLoader(
+        val = QGDataLoader(
             os.path.join(flags.folder, "QG", "val_qg.h5"),
             flags.batch,
             hvd.rank(),
             hvd.size(),
         )
     elif flags.dataset == "cms":
-        train = utils.CMSQGDataLoader(
+        train = CMSQGDataLoader(
             os.path.join(flags.folder, "CMSQG", "train_qgcms_pid.h5"),
             flags.batch,
             hvd.rank(),
             hvd.size(),
         )
-        val = utils.CMSQGDataLoader(
+        val = CMSQGDataLoader(
             os.path.join(flags.folder, "CMSQG", "val_qgcms_pid.h5"),
             flags.batch,
             hvd.rank(),
             hvd.size(),
         )
     elif flags.dataset == "h1":
-        train = utils.H1DataLoader(
+        train = H1DataLoader(
             os.path.join(flags.folder, "H1", "train.h5"),
             flags.batch,
             hvd.rank(),
             hvd.size(),
         )
-        val = utils.H1DataLoader(
+        val = H1DataLoader(
             os.path.join(flags.folder, "H1", "val.h5"),
             flags.batch,
             hvd.rank(),
             hvd.size(),
         )
     elif flags.dataset == "jetclass":
-        train = utils.JetClassDataLoader(
+        train = JetClassDataLoader(
             os.path.join(flags.folder, "JetClass", "train"),
             flags.batch,
             hvd.rank(),
             hvd.size(),
         )
-        val = utils.JetClassDataLoader(
+        val = JetClassDataLoader(
             os.path.join(flags.folder, "JetClass", "val"),
             flags.batch,
             hvd.rank(),
@@ -205,7 +214,7 @@ def configure_optimizers(flags, train_loader, lr_factor=1.0):
 
 
 def main():
-    utils.setup_gpus()
+    setup_gpus()
     flags = parse_arguments()
 
     train_loader, val_loader = get_data_loader(flags)
@@ -226,7 +235,7 @@ def main():
     if flags.fine_tune:
         if hvd.rank() == 0:
             model_name = (
-                utils.get_model_name(flags, flags.fine_tune)
+                get_model_name(flags, flags.fine_tune)
                 .replace(flags.dataset, "jetclass")
                 .replace("fine_tune", "baseline")
                 .replace(flags.mode, "all")
@@ -253,7 +262,7 @@ def main():
     ]
 
     if hvd.rank() == 0:
-        checkpoint_name = utils.get_model_name(
+        checkpoint_name = get_model_name(
             flags,
             flags.fine_tune,
             add_string="_{}".format(flags.nid) if flags.nid > 0 else "",
@@ -285,7 +294,7 @@ def main():
             os.path.join(
                 flags.folder,
                 "histories",
-                utils.get_model_name(flags, flags.fine_tune).replace(
+                get_model_name(flags, flags.fine_tune).replace(
                     ".weights.h5", ".pkl"
                 ),
             ),

@@ -9,7 +9,9 @@ import matplotlib.pyplot as plt
 import numpy as np
 import plot_utils
 import tensorflow as tf
-import omnilearn.utils as utils
+from omnilearn.data import EicPythiaDataLoader
+from omnilearn.distributed import setup_gpus
+from omnilearn.naming import get_model_name
 from PET_eicpythia import PET_eicpythia
 
 # Setup logging
@@ -68,7 +70,7 @@ def parse_arguments():
 
 
 def get_data_info(flags):
-    test = utils.EicPythiaDataLoader(
+    test = EicPythiaDataLoader(
         os.path.join(flags.folder, "EIC_Pythia", "val_eic.h5"),
         rank=hvd.rank(),
         size=hvd.size(),
@@ -96,7 +98,7 @@ def load_data_and_model(flags):
     )
 
     model_name = os.path.join(
-        flags.folder, "checkpoints", utils.get_model_name(flags, flags.fine_tune)
+        flags.folder, "checkpoints", get_model_name(flags, flags.fine_tune)
     )
     model.load_weights(model_name)
     return test, model
@@ -391,14 +393,14 @@ def plot_results(jets, jets_gen, particles, particles_gen, flags):
 
 def main():
     plot_utils.SetStyle()
-    utils.setup_gpus()
+    setup_gpus()
     if hvd.rank() == 0:
         logging.info("Horovod and GPUs initialized successfully.")
     flags = parse_arguments()
     sample_name = os.path.join(
         flags.folder,
         "EIC_Pythia",
-        utils.get_model_name(flags, flags.fine_tune).replace(".weights.h5", ".h5"),
+        get_model_name(flags, flags.fine_tune).replace(".weights.h5", ".h5"),
     )
 
     if flags.sample:

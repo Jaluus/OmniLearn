@@ -5,7 +5,16 @@ import _bootstrap  # noqa: F401
 import horovod.tensorflow.keras as hvd
 import numpy as np
 import tensorflow as tf
-import omnilearn.utils as utils
+from omnilearn.data import (
+    AtlasDataLoader,
+    CMSQGDataLoader,
+    H1DataLoader,
+    JetClassDataLoader,
+    QGDataLoader,
+    TopDataLoader,
+)
+from omnilearn.distributed import setup_gpus
+from omnilearn.naming import get_model_name
 from omnifold import Classifier
 from omnilearn.models.pet import PET
 from sklearn import metrics
@@ -110,7 +119,7 @@ def print_metrics(y_pred, y, thresholds, multi_label=False):
 def get_data_info(flags):
     multi_label = True
     if flags.dataset == "top":
-        test = utils.TopDataLoader(
+        test = TopDataLoader(
             os.path.join(flags.folder, "TOP", "test_ttbar.h5"),
             flags.batch,
             rank=hvd.rank(),
@@ -120,7 +129,7 @@ def get_data_info(flags):
         folder_name = "TOP"
 
     if flags.dataset == "opt":
-        test = utils.TopDataLoader(
+        test = TopDataLoader(
             os.path.join(flags.folder, "Opt", "test_ttbar.h5"),
             flags.batch,
             rank=hvd.rank(),
@@ -130,7 +139,7 @@ def get_data_info(flags):
         folder_name = "Opt"
 
     elif flags.dataset == "qg":
-        test = utils.QGDataLoader(
+        test = QGDataLoader(
             os.path.join(flags.folder, "QG", "test_qg.h5"),
             flags.batch,
             rank=hvd.rank(),
@@ -140,7 +149,7 @@ def get_data_info(flags):
         folder_name = "QG"
 
     elif flags.dataset == "atlas":
-        test = utils.AtlasDataLoader(
+        test = AtlasDataLoader(
             os.path.join(flags.folder, "ATLASTOP", "test_atlas.h5"),
             flags.batch,
             rank=hvd.rank(),
@@ -150,7 +159,7 @@ def get_data_info(flags):
         folder_name = "ATLASTOP"
         multi_label = False
     elif flags.dataset == "atlas_small":
-        test = utils.AtlasDataLoader(
+        test = AtlasDataLoader(
             os.path.join(flags.folder, "ATLASTOP", "test_atlas.h5"),
             flags.batch,
             rank=hvd.rank(),
@@ -160,7 +169,7 @@ def get_data_info(flags):
         folder_name = "ATLASTOP"
         multi_label = False
     elif flags.dataset == "h1":
-        test = utils.H1DataLoader(
+        test = H1DataLoader(
             os.path.join(flags.folder, "H1", "test.h5"),
             flags.batch,
             rank=hvd.rank(),
@@ -170,7 +179,7 @@ def get_data_info(flags):
         folder_name = "H1"
 
     elif flags.dataset == "cms":
-        test = utils.CMSQGDataLoader(
+        test = CMSQGDataLoader(
             os.path.join(flags.folder, "CMSQG", "test_qgcms_pid.h5"),
             flags.batch,
             rank=hvd.rank(),
@@ -180,7 +189,7 @@ def get_data_info(flags):
         folder_name = "CMSQG"
 
     elif flags.dataset == "jetclass":
-        test = utils.JetClassDataLoader(
+        test = JetClassDataLoader(
             os.path.join(
                 flags.folder, "JetClass", "test", rank=hvd.rank(), size=hvd.size()
             ),
@@ -205,7 +214,7 @@ def load_or_evaluate_model(flags, test, folder_name):
         folder_name,
         "npy",
         "{}".format(
-            utils.get_model_name(
+            get_model_name(
                 flags,
                 fine_tune=flags.fine_tune,
                 add_string="_{}".format(flags.nid) if flags.nid > 0 else "",
@@ -244,7 +253,7 @@ def load_or_evaluate_model(flags, test, folder_name):
             os.path.join(
                 flags.folder,
                 "checkpoints",
-                utils.get_model_name(
+                get_model_name(
                     flags, fine_tune=flags.fine_tune, add_string=add_string
                 ),
             )
@@ -263,7 +272,7 @@ def load_or_evaluate_model(flags, test, folder_name):
 
 
 def main():
-    utils.setup_gpus()
+    setup_gpus()
     flags = parse_arguments()
 
     test, multi_label, thresholds, folder_name = get_data_info(flags)

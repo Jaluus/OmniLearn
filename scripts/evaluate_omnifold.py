@@ -7,7 +7,8 @@ import horovod.tensorflow.keras as hvd
 import numpy as np
 import plot_utils
 import tensorflow as tf
-import omnilearn.utils as utils
+from omnilearn.data import OmniDataLoader
+from omnilearn.distributed import setup_gpus
 from omnifold import Classifier, OmniFold
 
 
@@ -171,18 +172,18 @@ def parse_arguments():
 
 def main():
     logging.basicConfig(level=logging.INFO)
-    utils.setup_gpus()
+    setup_gpus()
     plot_utils.SetStyle()
     flags = parse_arguments()
 
-    mc = utils.OmniDataLoader(
+    mc = OmniDataLoader(
         os.path.join(flags.folder, "OmniFold", "train_pythia.h5"),
         flags.batch,
         hvd.rank(),
         hvd.size(),
     )
 
-    data = utils.OmniDataLoader(
+    data = OmniDataLoader(
         os.path.join(flags.folder, "OmniFold", "train_herwig.h5"),
         flags.batch,
         hvd.rank(),

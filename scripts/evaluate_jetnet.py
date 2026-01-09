@@ -8,7 +8,9 @@ import horovod.tensorflow.keras as hvd
 import numpy as np
 import plot_utils
 import tensorflow as tf
-import omnilearn.utils as utils
+from omnilearn.data import JetNetDataLoader
+from omnilearn.distributed import setup_gpus
+from omnilearn.naming import get_model_name
 from PET_jetnet import PET_jetnet
 
 # Setup logging
@@ -71,7 +73,7 @@ def parse_arguments():
 
 def get_data_info(flags):
     if flags.dataset == "jetnet150":
-        test = utils.JetNetDataLoader(
+        test = JetNetDataLoader(
             os.path.join(flags.folder, "JetNet", "test_150.h5"),
             rank=hvd.rank(),
             size=hvd.size(),
@@ -79,7 +81,7 @@ def get_data_info(flags):
         )
 
     elif flags.dataset == "jetnet30":
-        test = utils.JetNetDataLoader(
+        test = JetNetDataLoader(
             os.path.join(flags.folder, "JetNet", "test_30.h5"),
             rank=hvd.rank(),
             size=hvd.size(),
@@ -109,7 +111,7 @@ def load_data_and_model(flags):
     )
 
     model_name = os.path.join(
-        flags.folder, "checkpoints", utils.get_model_name(flags, flags.fine_tune)
+        flags.folder, "checkpoints", get_model_name(flags, flags.fine_tune)
     )
     model.load_weights(model_name)
     return test, model
@@ -295,14 +297,14 @@ def plot_results(jets, jets_gen, particles, particles_gen, flavour, flavour_gen,
 
 def main():
     plot_utils.SetStyle()
-    utils.setup_gpus()
+    setup_gpus()
     if hvd.rank() == 0:
         logging.info("Horovod and GPUs initialized successfully.")
     flags = parse_arguments()
     sample_name = os.path.join(
         flags.folder,
         "JetNet",
-        utils.get_model_name(
+        get_model_name(
             flags, flags.fine_tune, add_string="_ideal" if flags.ideal else ""
         ).replace(".weights.h5", ".h5"),
     )

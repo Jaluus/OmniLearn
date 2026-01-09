@@ -8,7 +8,9 @@ import horovod.tensorflow.keras as hvd
 import numpy as np
 
 # Custom local imports
-import omnilearn.utils as utils
+from omnilearn.data import LHCODataLoader
+from omnilearn.distributed import setup_gpus
+from omnilearn.naming import get_model_name
 from keras.callbacks import EarlyStopping, ModelCheckpoint, ReduceLROnPlateau
 
 # Keras imports
@@ -94,16 +96,16 @@ def configure_optimizers(flags, train_loader, lr_factor=1.0):
 
 
 def main():
-    utils.setup_gpus()
+    setup_gpus()
     flags = parse_arguments()
 
-    train_loader = utils.LHCODataLoader(
+    train_loader = LHCODataLoader(
         os.path.join(flags.folder, "LHCO", "train_background_SB.h5"),
         flags.batch,
         hvd.rank(),
         hvd.size(),
     )
-    test_loader = utils.LHCODataLoader(
+    test_loader = LHCODataLoader(
         os.path.join(flags.folder, "LHCO", "val_background_SB.h5"),
         flags.batch,
         hvd.rank(),
@@ -112,7 +114,7 @@ def main():
 
     if flags.fine_tune:
         model_name = (
-            utils.get_model_name(flags, flags.fine_tune)
+            get_model_name(flags, flags.fine_tune)
             .replace(flags.dataset, "jetclass")
             .replace("fine_tune", "baseline")
             .replace(flags.mode, "all")
@@ -143,7 +145,7 @@ def main():
             os.path.join(
                 flags.folder,
                 "checkpoints",
-                utils.get_model_name(flags, flags.fine_tune),
+                get_model_name(flags, flags.fine_tune),
             )
         )
 
@@ -167,7 +169,7 @@ def main():
             os.path.join(
                 flags.folder,
                 "checkpoints",
-                utils.get_model_name(flags, flags.fine_tune),
+                get_model_name(flags, flags.fine_tune),
             ),
             save_best_only=True,
             mode="auto",
@@ -192,7 +194,7 @@ def main():
             os.path.join(
                 flags.folder,
                 "histories",
-                utils.get_model_name(flags, flags.fine_tune).replace(
+                get_model_name(flags, flags.fine_tune).replace(
                     ".weights.h5", ".pkl"
                 ),
             ),

@@ -8,7 +8,9 @@ import horovod.tensorflow.keras as hvd
 import numpy as np
 
 # Custom local imports
-import omnilearn.utils as utils
+from omnilearn.data import AtlasDataLoader
+from omnilearn.distributed import setup_gpus
+from omnilearn.naming import get_model_name
 from omnifold import Classifier
 from tensorflow import keras
 
@@ -75,14 +77,14 @@ def parse_arguments():
 
 
 def get_data_loader(flags):
-    train = utils.AtlasDataLoader(
+    train = AtlasDataLoader(
         os.path.join(flags.folder, "ATLASTOP", "train_atlas.h5"),
         flags.batch,
         hvd.rank(),
         hvd.size(),
         is_small="small" in flags.dataset,
     )
-    val = utils.AtlasDataLoader(
+    val = AtlasDataLoader(
         os.path.join(flags.folder, "ATLASTOP", "val_atlas.h5"),
         flags.batch,
         hvd.rank(),
@@ -110,14 +112,14 @@ def configure_optimizers(flags, train_loader, lr_factor=1.0):
 
 
 def main():
-    utils.setup_gpus()
+    setup_gpus()
     flags = parse_arguments()
 
     train_loader, val_loader = get_data_loader(flags)
 
     if flags.fine_tune:
         model_name = (
-            utils.get_model_name(flags, flags.fine_tune)
+            get_model_name(flags, flags.fine_tune)
             .replace(flags.dataset, "jetclass")
             .replace("fine_tune", "baseline")
             .replace(flags.mode, "all")
@@ -162,7 +164,7 @@ def main():
     ]
 
     if hvd.rank() == 0:
-        checkpoint_name = utils.get_model_name(flags, flags.fine_tune)
+        checkpoint_name = get_model_name(flags, flags.fine_tune)
         checkpoint_path = os.path.join(flags.folder, "checkpoints", checkpoint_name)
         checkpoint_callback = keras.callbacks.ModelCheckpoint(
             checkpoint_path,
@@ -189,7 +191,7 @@ def main():
             os.path.join(
                 flags.folder,
                 "histories",
-                utils.get_model_name(flags, flags.fine_tune).replace(
+                get_model_name(flags, flags.fine_tune).replace(
                     ".weights.h5", ".pkl"
                 ),
             ),

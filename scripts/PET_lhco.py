@@ -3,7 +3,7 @@ import time
 import numpy as np
 import tensorflow as tf
 import _bootstrap  # noqa: F401
-import omnilearn.utils as utils
+from omnilearn.preprocessing import revert_npart
 from keras import Input, layers
 from keras.losses import mse
 from keras.models import Model
@@ -446,7 +446,7 @@ class PET_lhco(keras.Model):
                 jet = dijet[:, ijet]
                 nparts = np.expand_dims(
                     np.clip(
-                        utils.revert_npart(jet[:, -1], str(self.max_part)),
+                        revert_npart(jet[:, -1], str(self.max_part)),
                         2,
                         self.max_part,
                     ),

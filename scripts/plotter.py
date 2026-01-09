@@ -3,7 +3,18 @@ import os
 import _bootstrap  # noqa: F401
 import numpy as np
 import plot_utils
-import omnilearn.utils as utils
+from omnilearn.data import (
+    CMSQGDataLoader,
+    EicPythiaDataLoader,
+    H1DataLoader,
+    JetClassDataLoader,
+    JetNetDataLoader,
+    LHCODataLoader,
+    OmniDataLoader,
+    QGDataLoader,
+    TauDataLoader,
+    TopDataLoader,
+)
 
 plot_utils.SetStyle()
 
@@ -34,51 +45,51 @@ def parse_options():
 def load_data(flags):
     """Load data based on dataset using specified data loaders and file naming conventions."""
     if flags.dataset == "top":
-        test = utils.TopDataLoader(os.path.join(flags.folder, "TOP", "test_ttbar.h5"))
+        test = TopDataLoader(os.path.join(flags.folder, "TOP", "test_ttbar.h5"))
     elif flags.dataset == "opt":
-        test = utils.TopDataLoader(os.path.join(flags.folder, "Opt", "test_ttbar.h5"))
+        test = TopDataLoader(os.path.join(flags.folder, "Opt", "test_ttbar.h5"))
 
     elif flags.dataset == "tau":
-        test = utils.TauDataLoader(os.path.join(flags.folder, "TAU", "test_tau.h5"))
+        test = TauDataLoader(os.path.join(flags.folder, "TAU", "test_tau.h5"))
     elif flags.dataset == "qg":
-        test = utils.QGDataLoader(os.path.join(flags.folder, "QG", "test_qg.h5"))
+        test = QGDataLoader(os.path.join(flags.folder, "QG", "test_qg.h5"))
 
     elif flags.dataset == "cms":
-        test = utils.CMSQGDataLoader(
+        test = CMSQGDataLoader(
             os.path.join(flags.folder, "CMSQG", "test_qgcms_pid.h5")
         )
 
     elif flags.dataset == "jetnet150":
-        test = utils.JetNetDataLoader(
+        test = JetNetDataLoader(
             os.path.join(flags.folder, "JetNet", "test_150.h5"), big=True
         )
 
     elif flags.dataset == "eic":
-        test = utils.EicPythiaDataLoader(
+        test = EicPythiaDataLoader(
             os.path.join(flags.folder, "EIC_Pythia", "val_eic.h5")
         )
     elif flags.dataset == "jetnet30":
-        test = utils.JetNetDataLoader(
+        test = JetNetDataLoader(
             os.path.join(flags.folder, "JetNet", "test_30.h5")
         )
 
     elif flags.dataset == "jetclass":
-        test = utils.JetClassDataLoader(os.path.join(flags.folder, "JetClass", "test"))
+        test = JetClassDataLoader(os.path.join(flags.folder, "JetClass", "test"))
 
     elif flags.dataset == "h1":
-        test = utils.H1DataLoader(os.path.join(flags.folder, "H1", "val.h5"))
+        test = H1DataLoader(os.path.join(flags.folder, "H1", "val.h5"))
 
     elif flags.dataset == "atlas":
-        test = utils.H1DataLoader(
+        test = H1DataLoader(
             os.path.join(flags.folder, "ATLASTOP", "val_atlas.h5")
         )
 
     elif flags.dataset == "omnifold":
-        test = utils.OmniDataLoader(
+        test = OmniDataLoader(
             os.path.join(flags.folder, "OmniFold", "test_pythia.h5")
         )
     elif flags.dataset == "lhco":
-        test = utils.LHCODataLoader(
+        test = LHCODataLoader(
             os.path.join(flags.folder, "LHCO", "val_background_SB.h5")
         )
     else:

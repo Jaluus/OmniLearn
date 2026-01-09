@@ -8,7 +8,9 @@ import horovod.tensorflow.keras as hvd
 import numpy as np
 import plot_utils
 import tensorflow as tf
-import omnilearn.utils as utils
+from omnilearn.data import LHCODataLoader
+from omnilearn.distributed import setup_gpus
+from omnilearn.naming import get_model_name
 from PET_lhco import PET_lhco
 
 # Setup logging
@@ -119,7 +121,7 @@ def plot(data, title, plot_folder, names, weights=None):
 
 
 def load_data_sample(flags):
-    test = utils.LHCODataLoader(
+    test = LHCODataLoader(
         os.path.join(flags.folder, "LHCO", "train_background_SB.h5"),
         rank=hvd.rank(),
         size=hvd.size(),
@@ -159,14 +161,14 @@ def load_model(flags, test):
     )
 
     model_name = os.path.join(
-        flags.folder, "checkpoints", utils.get_model_name(flags, flags.fine_tune)
+        flags.folder, "checkpoints", get_model_name(flags, flags.fine_tune)
     )
     model.load_weights("{}".format(model_name))
     return model
 
 
 def sample_data(flags, folder, sample_name, nsplit=25):
-    utils.setup_gpus()
+    setup_gpus()
 
     test, jets, y = load_data_sample(flags)
     model = load_model(flags, test)
@@ -204,7 +206,7 @@ def main():
         sample_data(
             flags,
             folder=os.path.join(flags.folder, "LHCO"),
-            sample_name=utils.get_model_name(flags, flags.fine_tune).replace(
+            sample_name=get_model_name(flags, flags.fine_tune).replace(
                 ".weights.h5", "_{}.h5".format("SR" if flags.SR else "SB")
             ),
         )
@@ -217,7 +219,7 @@ def main():
                 flags.folder,
                 "LHCO",
                 "train_"
-                + utils.get_model_name(flags, True).replace(
+                + get_model_name(flags, True).replace(
                     ".weights.h5", "_{}.h5".format("SR" if flags.SR else "SB")
                 ),
             ),
@@ -225,7 +227,7 @@ def main():
                 flags.folder,
                 "LHCO",
                 "train_"
-                + utils.get_model_name(flags, False).replace(
+                + get_model_name(flags, False).replace(
                     ".weights.h5", "_{}.h5".format("SR" if flags.SR else "SB")
                 ),
             ),
@@ -238,7 +240,7 @@ def main():
 
         particles, jets = {}, {}
         for file_name in file_names:
-            test = utils.LHCODataLoader(file_names[file_name])
+            test = LHCODataLoader(file_names[file_name])
             jet, particle = test.jet, test.X
             # flatten features
             jets[file_name] = jet.reshape(-1, test.num_jet)

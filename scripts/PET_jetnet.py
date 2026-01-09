@@ -1,7 +1,7 @@
 import numpy as np
 import tensorflow as tf
 import _bootstrap  # noqa: F401
-import omnilearn.utils as utils
+from omnilearn.preprocessing import revert_npart
 from keras import Input, layers
 from keras.models import Model
 
@@ -433,7 +433,7 @@ class PET_jetnet(keras.Model):
 
             nparts = np.expand_dims(
                 np.clip(
-                    utils.revert_npart(jet[:, -1], name=str(self.max_part)),
+                    revert_npart(jet[:, -1], name=str(self.max_part)),
                     5,
                     self.max_part,
                 ),

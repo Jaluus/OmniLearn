@@ -893,10 +893,7 @@ class JetClassDataLoader(DataLoader):
         current_file = h5.File(file_list[0], "r")
         self.num_part = current_file["data"].shape[1]
         self.num_feat = current_file["data"].shape[2]
-
-        # TODO: Fix this, I the pid key previously faild, as the shape was 1D
-        # Why did the previous code work then?
-        self.num_classes = 10  # current_file["pid"].shape[1]
+        self.num_classes = current_file["pid"].shape[1]
 
     def single_file_generator(self, file_path):
         with h5.File(file_path, "r") as file:
@@ -949,7 +946,9 @@ class JetClassDataLoader(DataLoader):
                     "input_points": tf.TensorSpec(
                         shape=(self.num_part, 2), dtype=tf.float32
                     ),
-                    "input_mask": tf.TensorSpec(shape=(self.num_part), dtype=tf.float32),
+                    "input_mask": tf.TensorSpec(
+                        shape=(self.num_part), dtype=tf.float32
+                    ),
                     "input_jet": tf.TensorSpec(shape=(self.num_jet), dtype=tf.float32),
                 },
                 tf.TensorSpec(shape=(self.num_classes), dtype=tf.int64),
@@ -961,4 +960,3 @@ class JetClassDataLoader(DataLoader):
             .batch(self.batch_size)
             .prefetch(tf.data.AUTOTUNE)
         )
-
